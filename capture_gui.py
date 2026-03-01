@@ -1,6 +1,7 @@
 import configparser
 import os
 import platform
+import re
 import shutil
 import subprocess
 import tempfile
@@ -413,11 +414,13 @@ class CaptureGUI(QMainWindow):
                     # card 0: PCH [HDA Intel PCH], device 0: ALC285 Analog [ALC285 Analog]
                     for line in output.splitlines():
                         if line.startswith("card"):
-                            parts = line.split(":")
-                            card = parts[0].split()[1]
-                            device = parts[2].split()[1]
-                            name = parts[1].split("[")[1].split("]")[0]
-                            audio_devices.append((name, f"hw:{card},{device}"))
+                            m = re.match(r"card\s+(\d+):.*device\s+(\d+):", line)
+                            if m:
+                                card = m.group(1)
+                                device = m.group(2)
+                                parts = line.split(":")
+                                name = parts[1].split("[")[1].split("]")[0]
+                                audio_devices.append((name, f"hw:{card},{device}"))
                 except Exception:
                     pass
 
